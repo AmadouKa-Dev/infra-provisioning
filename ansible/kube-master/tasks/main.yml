@@ -1,0 +1,92 @@
+---
+# Créer dossier pour pouvoir y mettre le config
+- name: Créer /etc/rancher/k3s
+  file:
+    path: /etc/rancher/k3s
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+# Générer config.yaml avant installation
+- name: Créer /etc/rancher/k3s/config.yaml
+  copy:
+    dest: /etc/rancher/k3s/config.yaml
+    content: |
+      node-ip: "{{ ansible_default_ipv4.address }}"
+      advertise-address: "{{ ansible_default_ipv4.address }}"
+      tls-san:
+        - "{{ ansible_default_ipv4.address }}"
+      flannel-iface: ens5
+      disable:
+        - traefik
+        - metrics-server
+      write-kubeconfig-mode: "0644"
+    owner: root
+    group: root
+    mode: 0644
+
+# Télécharge le script officiel K3s
+- name: Installer K3s master
+  shell: |
+    curl -sfL https://get.k3s.io | sh -
+  args:
+    executable: /bin/bash
+
+- name: Attendre que le kubeconfig système soit créé
+  wait_for:
+    path: /etc/rancher/k3s/k3s.yaml
+    timeout: 120
+
+
+- name: Redémarrer K3s pour recharger config
+  systemd:
+    name: k3s
+    state: restarted
+
+- name: Attendre API Ready
+  shell: |
+    kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml get nodes
+  register: api_ready
+  retries: 20
+  delay: 6
+  until: api_ready.rc == 0
+
+ # ==== Kubeconfig pour l'utilisateur ubuntu ====
+
+- name: Créer dossier .kube pour user ubuntu
+  file:
+    path: /home/ubuntu/.kube
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+# Permet à l’utilisateur ubuntu d’utiliser kubectl sans sudo
+- name: Copier kubeconfig pour l’utilisateur ubuntu
+  copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: /home/ubuntu/.kube/config
+    owner: ubuntu
+    group: ubuntu
+    mode: '0644'
+    remote_src: yes
+
+# token d’authentification utilisé par les **workers** pour rejoindre le cluster est stocké dans `/var/lib/rancher/k3s/server/node-token`
+- name: Récupérer token du master pour que les workers puissent "join"
+  shell: cat /var/lib/rancher/k3s/server/node-token
+  register: k3s_token
+
+- name: Sauvegarder token pour workers
+  local_action:
+    module: copy
+    content: "{{ k3s_token.stdout }}"
+    dest: k3s-token.txt
+  become: no
+
+- name: Sauvegarder l’IP master pour join
+  local_action:
+    module: copy
+    content: "{{ ansible_default_ipv4.address }}"  # IP privée
+    dest: k3s-master-ip.txt
+  become: no

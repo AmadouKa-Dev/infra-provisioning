@@ -1,3 +1,7 @@
+# Ignore k3s-* files
+ansible/k3s-master-ip.txt
+ansible/k3s-token.txt
+
 # Ignore Terraform state files
 *.tfstate
 *.tfstate.*

@@ -11,12 +11,45 @@ resource "aws_security_group" "web_app_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+# API Kubernetes (master ⇄ worker)
+  ingress {
+    description = "K3s API Server (port 6443)"
+    from_port   = 6443
+    to_port     = 6443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # réseau privé (si master & worker dans même VPC)
+  }
+
+  ingress {
+    description = "K3s Flannel Overlay Network (port 8472)"
+    from_port   = 8472
+    to_port     = 8472
+    protocol    = "udp"
+    cidr_blocks = ["0.0.0.0/0"] # Généralement ouvert dans le VPC interne pour les noeuds
+  }
+# Communication kubelet ↔ API
+  ingress {
+    description = "K3s node communication"
+    from_port   = 10250
+    to_port     = 10250
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
 # Va nous servir pour le Django exposé sur le port 80
   ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+# Tout trafic interne entre membres du SG
+  ingress {
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    self      = true
   }
 
   egress {
