@@ -10,7 +10,7 @@ variable "region" {
 
 variable "instance_count" {
     type = number
-    default = 3
+    default = 2
 }
 
 variable "key_name" {
@@ -21,6 +21,11 @@ variable "key_name" {
 variable "ssh_public_key_path" {
     type = string
     default = "~/.ssh/id_rsa.pub"
+}
+
+variable "ssh_private_key_path" {
+  type    = string
+  default = "~/.ssh/id_rsa"
 }
 
 #variable "ami" {
