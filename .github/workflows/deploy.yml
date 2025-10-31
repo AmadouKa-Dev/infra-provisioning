@@ -66,10 +66,12 @@ jobs:
       - name: Apply OpenTofu (Terraform)
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
+          ABS_PUB_KEY=$(realpath ~/.ssh/id_k3s_aws.pub)
+          ABS_PRIV_KEY=$(realpath ~/.ssh/id_k3s_aws)
           tofu init
           tofu apply -auto-approve \
-            -var "ssh_public_key_path=.ssh/id_k3s_aws.pub" \
-            -var "ssh_private_key_path=.ssh/id_k3s_aws"
+            -var "ssh_public_key_path=$ABS_PUB_KEY" \
+            -var "ssh_private_key_path=$ABS_PRIV_KEY"
 
       # --- Étape 8 : Recrée la clé SSH pour Ansible ---
       - name: Setup SSH key for Ansible
