@@ -65,9 +65,11 @@ jobs:
       # --- Étape 7 : Exécuter OpenTofu ---
       - name: Apply OpenTofu (Terraform)
         working-directory: ${{ env.TF_WORKING_DIR }}
+        env:
+          SSH_KEY_FILE: ~/.ssh/id_k3s_aws
         run: |
-          ABS_PUB_KEY=$(realpath ~/.ssh/id_k3s_aws.pub)
-          ABS_PRIV_KEY=$(realpath ~/.ssh/id_k3s_aws)
+          ABS_PUB_KEY=$(realpath $SSH_KEY_FILE.pub)
+          ABS_PRIV_KEY=$(realpath $SSH_KEY_FILE)
           tofu init
           tofu apply -auto-approve \
             -var "ssh_public_key_path=$ABS_PUB_KEY" \
