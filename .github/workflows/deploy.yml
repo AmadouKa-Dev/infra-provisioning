@@ -24,6 +24,7 @@ jobs:
       - name: Generate temporary SSH key
         run: |
           mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
           ssh-keygen -t rsa -b 4096 -f $SSH_KEY_FILE -C "k3s-deployment"
           chmod 600 $SSH_KEY_FILE
           chmod 644 $SSH_KEY_FILE.pub
