@@ -13,13 +13,28 @@ jobs:
     env:
       TF_WORKING_DIR: ./terraform
       ANSIBLE_DIR: ./ansible
+      SSH_KEY_FILE: ~/.ssh/id_k3s_aws
 
     steps:
       # --- Étape 1 : Récupération du code ---
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # --- Étape 2 : Installer OpenTofu ---
+      # --- Étape 2 : Générer la clé SSH temporaire ---
+      - name: Generate temporary SSH key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keygen -t rsa -b 4096 -f $SSH_KEY_FILE -C "k3s-deployment"
+          chmod 600 $SSH_KEY_FILE
+          chmod 644 $SSH_KEY_FILE.pub
+
+      # --- Étape 3 : Stocker la clé privée comme variable d’environnement ---
+      - name: Export SSH private key to environment
+        run: |
+          SSH_KEY_TEMP=$(cat $SSH_KEY_FILE)
+          echo "SSH_PRIVATE_KEY=$SSH_KEY_TEMP" >> $GITHUB_ENV
+
+      # --- Étape 4 : Installer OpenTofu ---
       - name: Install OpenTofu
         run: |
           sudo apt update
@@ -27,7 +42,7 @@ jobs:
           sudo snap install opentofu --classic
           tofu version
 
-      # --- Étape 3 : Installer Ansible & AWS CLI ---
+      # --- Étape 5 : Installer Ansible & AWS CLI ---
       - name: Install Ansible & AWS CLI
         run: |
           sudo apt update
@@ -38,7 +53,7 @@ jobs:
           aws --version
           ansible --version
 
-      # --- Étape 4 : Configurer AWS Credentials ---
+      # --- Étape 6 : Configurer AWS Credentials ---
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -46,20 +61,35 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
 
-      # --- Étape 5 : Exécuter OpenTofu ---
+      # --- Étape 7 : Exécuter OpenTofu ---
       - name: Apply OpenTofu (Terraform)
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
           tofu init
-          tofu apply -auto-approve
+          tofu apply -auto-approve \
+            -var "ssh_public_key_path=$SSH_KEY_FILE.pub" \
+            -var "ssh_private_key_path=$SSH_KEY_FILE"
 
-      # --- Étape 6 : Exécuter Ansible ---
+      # --- Étape 8 : Recrée la clé SSH pour Ansible ---
+      - name: Setup SSH key for Ansible
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ env.SSH_PRIVATE_KEY }}" > $SSH_KEY_FILE
+          chmod 600 $SSH_KEY_FILE
+          ls -l ~/.ssh
+
+      # --- Étape 9 : Exécuter Ansible ---
       - name: Configure K3s cluster via Ansible
         working-directory: ${{ env.ANSIBLE_DIR }}
         run: |
           ansible-playbook -i inventory.ini playbook.yml
 
-      # --- Étape 7 : Vérification ---
+      # --- Étape 10 : Vérification ---
       - name: Show generated inventory
         working-directory: ${{ env.ANSIBLE_DIR }}
         run: cat inventory.ini
+
+      # --- Étape 11 : Nettoyage final ---
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f $SSH_KEY_FILE $SSH_KEY_FILE.pub
