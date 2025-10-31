@@ -23,7 +23,7 @@ jobs:
       # --- Étape 2 : Générer la clé SSH temporaire ---
       - name: Generate temporary SSH key
         run: |
-          mkdir ~/.ssh/
+          mkdir -p "$(dirname "$SSH_KEY_FILE")"
           ssh-keygen -t rsa -b 4096 -f $SSH_KEY_FILE -C "k3s-deployment"
           chmod 600 $SSH_KEY_FILE
           chmod 644 $SSH_KEY_FILE.pub
