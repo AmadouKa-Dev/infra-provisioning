@@ -68,13 +68,13 @@ jobs:
         run: |
           tofu init
           tofu apply -auto-approve \
-            -var "ssh_public_key_path=$SSH_KEY_FILE.pub" \
-            -var "ssh_private_key_path=$SSH_KEY_FILE"
+            -var "ssh_public_key_path=$HOME/.ssh/id_k3s_aws.pub" \
+            -var "ssh_private_key_path=$HOME/.ssh/id_k3s_aws"
 
       # --- Étape 8 : Recrée la clé SSH pour Ansible ---
       - name: Setup SSH key for Ansible
         run: |
-          mkdir ~/.ssh/
+          mkdir -p "$(dirname "$SSH_KEY_FILE")"
           echo "${{ env.SSH_PRIVATE_KEY }}" > $SSH_KEY_FILE
           chmod 600 $SSH_KEY_FILE
           ls -l ~/.ssh
