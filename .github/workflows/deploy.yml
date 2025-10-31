@@ -31,8 +31,9 @@ jobs:
       # --- Étape 3 : Stocker la clé privée comme variable d’environnement ---
       - name: Export SSH private key to environment
         run: |
-          SSH_KEY_TEMP=$(cat $SSH_KEY_FILE)
-          echo "SSH_PRIVATE_KEY=$SSH_KEY_TEMP" >> $GITHUB_ENV
+          echo "SSH_PRIVATE_KEY<<EOF" >> $GITHUB_ENV
+          cat $SSH_KEY_FILE >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       # --- Étape 4 : Installer OpenTofu ---
       - name: Install OpenTofu
