@@ -3,7 +3,7 @@ name: Deploy K3s Infrastructure
 on:
   push:
     branches:
-      - main
+      - master
   workflow_dispatch:
 
 jobs:
@@ -22,7 +22,9 @@ jobs:
       # --- Étape 2 : Installer OpenTofu ---
       - name: Install OpenTofu
         run: |
-          curl -fsSL https://get.opentofu.org/install.sh | sudo bash
+          sudo apt update
+          sudo apt install snapd
+          sudo snap install opentofu --classic
           tofu version
 
       # --- Étape 3 : Installer Ansible & AWS CLI ---
