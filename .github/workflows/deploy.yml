@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      TF_WORKING_DIR: ./infra/terraform
-      ANSIBLE_DIR: ./infra/ansible
+      TF_WORKING_DIR: ./terraform
+      ANSIBLE_DIR: ./ansible
 
     steps:
       # --- Étape 1 : Récupération du code ---
