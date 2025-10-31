@@ -23,8 +23,7 @@ jobs:
       # --- Étape 2 : Générer la clé SSH temporaire ---
       - name: Generate temporary SSH key
         run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
+          mkdir -p ~/.ssh/
           ssh-keygen -t rsa -b 4096 -f $SSH_KEY_FILE -C "k3s-deployment"
           chmod 600 $SSH_KEY_FILE
           chmod 644 $SSH_KEY_FILE.pub
@@ -74,7 +73,7 @@ jobs:
       # --- Étape 8 : Recrée la clé SSH pour Ansible ---
       - name: Setup SSH key for Ansible
         run: |
-          mkdir -p ~/.ssh
+          mkdir -p ~/.ssh/
           echo "${{ env.SSH_PRIVATE_KEY }}" > $SSH_KEY_FILE
           chmod 600 $SSH_KEY_FILE
           ls -l ~/.ssh
