@@ -29,6 +29,3 @@ jobs:
         run: |
           tofu init
           tofu destroy -auto-approve
-
-      - name: Delete AWS key pair
-        run: aws ec2 delete-key-pair --key-name opentofu-amad-key || true

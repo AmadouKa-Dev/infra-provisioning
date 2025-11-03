@@ -64,26 +64,13 @@ jobs:
             -var "ssh_public_key_path=$HOME/.ssh/id_ansible.pub" \
             -var "ssh_private_key_path=$SSH_KEY_FILE"
 
-      # --- Étape 8 : Recrée la clé SSH pour Ansible ---
-      - name: Setup SSH key for Ansible
-        run: |
-          mkdir -p "$(dirname "$SSH_KEY_FILE")"
-          echo "${{ env.SSH_PRIVATE_KEY }}" > $SSH_KEY_FILE
-          chmod 600 $SSH_KEY_FILE
-          ls -l ~/.ssh
-
       # --- Étape 9 : Exécuter Ansible ---
       - name: Configure K3s cluster via Ansible
         working-directory: ${{ env.ANSIBLE_DIR }}
         run: |
-          ansible-playbook -i inventory.ini playbook.yml
+          ansible-playbook -i inventory.ini playbook.yml --private-key "$HOME/.ssh/id_ansible"
 
       # --- Étape 10 : Vérification ---
       - name: Show generated inventory
         working-directory: ${{ env.ANSIBLE_DIR }}
         run: cat inventory.ini
-
-      # --- Étape 11 : Nettoyage final ---
-      - name: Cleanup SSH key
-        if: always()
-        run: rm -f $SSH_KEY_FILE $SSH_KEY_FILE.pub
