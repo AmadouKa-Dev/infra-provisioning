@@ -13,27 +13,11 @@ jobs:
     env:
       TF_WORKING_DIR: ./terraform
       ANSIBLE_DIR: ./ansible
-      SSH_KEY_FILE: ~/.ssh/id_k3s_aws
 
     steps:
       # --- Étape 1 : Récupération du code ---
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # --- Étape 2 : Générer la clé SSH temporaire ---
-      - name: Generate temporary SSH key
-        run: |
-          mkdir -p "$(dirname "$SSH_KEY_FILE")"
-          ssh-keygen -t rsa -b 4096 -f $SSH_KEY_FILE -C "k3s-deployment"
-          chmod 600 $SSH_KEY_FILE
-          chmod 644 $SSH_KEY_FILE.pub
-
-      # --- Étape 3 : Stocker la clé privée comme variable d’environnement ---
-      - name: Export SSH private key to environment
-        run: |
-          echo "SSH_PRIVATE_KEY<<EOF" >> $GITHUB_ENV
-          cat $SSH_KEY_FILE >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
 
       # --- Étape 4 : Installer OpenTofu ---
       - name: Install OpenTofu
@@ -62,18 +46,23 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
 
+      - name: Setup SSH key from secrets
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ansible
+          chmod 600 ~/.ssh/id_ansible
+          ssh-keygen -y -f ~/.ssh/id_ansible > ~/.ssh/id_ansible.pub
+          echo "SSH_KEY_FILE=$HOME/.ssh/id_ansible" >> $GITHUB_ENV
+
+
       # --- Étape 7 : Exécuter OpenTofu ---
       - name: Apply OpenTofu (Terraform)
         working-directory: ${{ env.TF_WORKING_DIR }}
-        env:
-          SSH_KEY_FILE: ~/.ssh/id_k3s_aws
         run: |
-          ABS_PUB_KEY=$(realpath $SSH_KEY_FILE.pub)
-          ABS_PRIV_KEY=$(realpath $SSH_KEY_FILE)
           tofu init
           tofu apply -auto-approve \
-            -var "ssh_public_key_path=$ABS_PUB_KEY" \
-            -var "ssh_private_key_path=$ABS_PRIV_KEY"
+            -var "ssh_public_key_path=$HOME/.ssh/id_ansible.pub" \
+            -var "ssh_private_key_path=$SSH_KEY_FILE"
 
       # --- Étape 8 : Recrée la clé SSH pour Ansible ---
       - name: Setup SSH key for Ansible
