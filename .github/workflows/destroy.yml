@@ -24,6 +24,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
 
+      - name: Download Terraform state
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-state
+          path: ./terraform/
+
       - name: Destroy all infrastructure
         working-directory: ./terraform
         run: |
