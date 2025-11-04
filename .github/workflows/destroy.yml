@@ -25,10 +25,11 @@ jobs:
           aws-region: eu-north-1
 
       - name: Download Terraform state
-        uses: actions/download-artifact@v4
+        uses: ncipollo/release-action@v1
         with:
-          name: terraform-state
-          path: ./terraform/
+          artifacts: terraform.tfstate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Destroy all infrastructure
         working-directory: ./terraform

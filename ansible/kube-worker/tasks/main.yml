@@ -1,32 +1,17 @@
 ---
-# Étape 1 - Stocke le token du master dans 'k3s-token.txt' 
-- name: Récupérer token du master
-  local_action:
-    module: command
-    cmd: cat k3s-token.txt
-  register: k3s_token_result
-  become: no
-
-# Étape 2 - Stocke l’adresse IP dans 'k3s_master_ip'
-- name: Récupérer IP du master
-  local_action:
-    module: command
-    cmd: cat k3s-master-ip.txt
-  register: k3s_master_ip_result
-  become: no
-
-# Extraire les valeurs propres
-- name: Définir les variables propres
-  set_fact:
-    k3s_token_local: "{{ k3s_token_result.stdout | trim }}" # trim supprime les espaces avant et après
-    k3s_master_ip: "{{ k3s_master_ip_result.stdout | trim }}"
+- name: Vérifier que les variables requises sont définies
+  assert:
+    that:
+      - k3s_master_token is defined
+      - k3s_master_ip is defined
+    fail_msg: "Les variables k3s_master_token et k3s_master_ip doivent être définies"
 
 # Étape 3 - Joindre le worker au cluster (seulement si pas déjà fait)
 - name: Joindre le worker au cluster K3s
   shell: |
     curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent \
       --server https://{{ k3s_master_ip }}:6443 \
-      --token {{ k3s_token_local }} \
+      --token {{ k3s_master_token }} \
       --node-ip {{ ansible_default_ipv4.address }}" sh -
   args:
     executable: /bin/bash

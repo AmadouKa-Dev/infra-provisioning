@@ -29,5 +29,9 @@
 - name: Installer K3s workers
   hosts: workers
   become: true
+  vars:
+    # Récupère les variables du master via hostvars
+    k3s_master_token: "{{ hostvars[groups['master'][0]]['k3s_master_token'] }}"
+    k3s_master_ip: "{{ hostvars[groups['master'][0]]['k3s_master_ip'] }}"
   roles:
     - kube-worker

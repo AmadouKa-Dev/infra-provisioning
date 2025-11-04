@@ -65,10 +65,12 @@ jobs:
             -var "ssh_private_key_path=$SSH_KEY_FILE"
 
       - name: Upload Terraform state
-        uses: actions/upload-artifact@v4
+        uses: softprops/action-gh-release@v1
         with:
-          name: terraform-state
-          path: ${{ env.TF_WORKING_DIR }}/terraform.tfstate
+          files: ./terraform/terraform.tfstate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
 
       # --- Étape 9 : Exécuter Ansible ---
       - name: Configure K3s cluster via Ansible

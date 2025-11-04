@@ -77,16 +77,7 @@
   shell: cat /var/lib/rancher/k3s/server/node-token
   register: k3s_token
 
-- name: Sauvegarder token pour workers
-  local_action:
-    module: copy
-    content: "{{ k3s_token.stdout }}"
-    dest: k3s-token.txt
-  become: no
-
-- name: Sauvegarder l’IP master pour join
-  local_action:
-    module: copy
-    content: "{{ ansible_default_ipv4.address }}"  # IP privée
-    dest: k3s-master-ip.txt
-  become: no
+- name: Définir le token comme fact
+  set_fact:
+    k3s_master_token: "{{ k3s_token.stdout }}"
+    k3s_master_ip: "{{ ansible_default_ipv4.address }}"
