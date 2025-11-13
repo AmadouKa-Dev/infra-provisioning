@@ -6,6 +6,10 @@ on:
 jobs:
   destroy:
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -27,8 +31,50 @@ jobs:
       - name: Download Terraform state
         uses: actions/download-artifact@v5
         with:
-          name: terraform.tfstate
+          name: my-terraform-state
           path: ./terraform/terraform.tfstate
+
+      - name: Get latest successful Terraform Apply run
+        id: get_run
+        run: |
+          owner_repo="${GITHUB_REPOSITORY}"
+          workflow_name="Deploy K3s Infrastructure"
+
+          echo "Fetching latest successful run for workflow: $workflow_name"
+          workflow_id=$(gh api repos/$owner_repo/actions/workflows \
+            | jq -r --arg wf "$workflow_name" '.workflows[] | select(.name==$wf) | .id' | head -n1)
+
+          run_id=$(gh api repos/$owner_repo/actions/workflows/$workflow_id/runs?status=success \
+            --jq '.workflow_runs[0].id')
+
+          echo "run_id=$run_id" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Download latest artifact (terraform.tfstate)
+        id: download
+        run: |
+          owner_repo="${GITHUB_REPOSITORY}"
+          run_id=${{ steps.get_run.outputs.run_id }}
+
+          echo "Downloading artifact 'my-terraform-state' from run $run_id"
+          artifact_url=$(gh api repos/$owner_repo/actions/runs/$run_id/artifacts \
+            --jq '.artifacts[] | select(.name=="my-terraform-state") | .archive_download_url')
+
+          curl -L -H "Authorization: token ${{ github.token }}" -o artifact.zip "$artifact_url"
+          unzip -o artifact.zip -d ./artifact
+
+          echo "✅ Extracted artifact contents:"
+          ls -lR ./artifact
+
+          # Copy tfstate to standard Terraform path for later steps
+          mkdir -p ./terraform
+          cp ./artifact/terraform/terraform.tfstate ./terraform/terraform.tfstate
+
+          echo "TF_STATE_PATH=./terraform/terraform.tfstate" >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Destroy all infrastructure
         working-directory: ./terraform

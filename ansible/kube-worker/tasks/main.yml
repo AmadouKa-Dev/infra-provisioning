@@ -15,8 +15,8 @@
       --node-ip {{ ansible_default_ipv4.address }}" sh -
   args:
     executable: /bin/bash
-  async: 600
-  poll: 15
+  async: 900
+  poll: 30
 
 # Étape 4 - Vérifier le service k3s-agent
 - name: Vérifier que le service k3s-agent est actif

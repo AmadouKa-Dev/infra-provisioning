@@ -52,7 +52,6 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ansible
           chmod 600 ~/.ssh/id_ansible
           ssh-keygen -y -f ~/.ssh/id_ansible > ~/.ssh/id_ansible.pub
-          echo "SSH_KEY_FILE=$HOME/.ssh/id_ansible" >> $GITHUB_ENV
 
 
       # --- Étape 7 : Exécuter OpenTofu ---
@@ -62,7 +61,7 @@ jobs:
           tofu init
           tofu apply -auto-approve \
             -var "ssh_public_key_path=$HOME/.ssh/id_ansible.pub" \
-            -var "ssh_private_key_path=$SSH_KEY_FILE"
+            -var "ssh_private_key_path=$HOME/.ssh/id_ansible"
 
       - name: Upload Terraform state
         uses: actions/upload-artifact@v4
