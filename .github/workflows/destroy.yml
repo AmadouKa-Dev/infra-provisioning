@@ -69,9 +69,18 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_TOKEN: ${{ github.token }}
+      
+      - name: Setup SSH key from secrets
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ansible
+          chmod 600 ~/.ssh/id_ansible
+          ssh-keygen -y -f ~/.ssh/id_ansible > ~/.ssh/id_ansible.pub
 
       - name: Destroy all infrastructure
         working-directory: ./terraform
         run: |
           tofu init
-          tofu destroy -auto-approve
+          tofu apply -auto-approve \
+            -var "ssh_public_key_path=$HOME/.ssh/id_ansible.pub" \
+            -var "ssh_private_key_path=$HOME/.ssh/id_ansible"
