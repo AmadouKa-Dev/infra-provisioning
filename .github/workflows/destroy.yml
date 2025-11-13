@@ -63,7 +63,7 @@ jobs:
 
           # Copy tfstate to standard Terraform path for later steps
           mkdir -p ./terraform
-          cp ./artifact/terraform/terraform.tfstate ./terraform/terraform.tfstate
+          cp ./artifact/terraform.tfstate ./terraform/terraform.tfstate
 
           echo "TF_STATE_PATH=./terraform/terraform.tfstate" >> $GITHUB_ENV
         env:
