@@ -51,21 +51,23 @@ jobs:
           owner_repo="${GITHUB_REPOSITORY}"
           run_id=${{ steps.get_run.outputs.run_id }}
 
-          echo "Downloading artifact 'my-terraform-state' from run $run_id"
+          echo "Downloading artifact 'terraform-state' from run $run_id"
           artifact_url=$(gh api repos/$owner_repo/actions/runs/$run_id/artifacts \
-            --jq '.artifacts[] | select(.name=="my-terraform-state") | .archive_download_url')
+            --jq '.artifacts[] | select(.name=="terraform-state") | .archive_download_url')
 
           curl -L -H "Authorization: token ${{ github.token }}" -o artifact.zip "$artifact_url"
-          unzip -o artifact.zip -d ./artifact
-
+          unzip -o artifact.zip
+          
           echo "✅ Extracted artifact contents:"
-          ls -lR ./artifact
+          ls -lR .
 
-          # Copy tfstate to standard Terraform path for later steps
-          mkdir -p ./terraform
-          cp ./artifact/terraform.tfstate ./terraform/terraform.tfstate
+          # Vérifier que le fichier tfstate existe
+          if [ ! -f terraform.tfstate ]; then
+            echo "❌ ERROR: terraform.tfstate not found!"
+            exit 1
+          fi
 
-          echo "TF_STATE_PATH=./terraform/terraform.tfstate" >> $GITHUB_ENV
+          echo "✅ terraform.tfstate found and ready"
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_TOKEN: ${{ github.token }}
@@ -76,6 +78,16 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ansible
           chmod 600 ~/.ssh/id_ansible
           ssh-keygen -y -f ~/.ssh/id_ansible > ~/.ssh/id_ansible.pub
+
+      - name: Verify Terraform state
+        working-directory: ./terraform
+        run: |
+          # Copier le tfstate dans le bon répertoire
+          cp ../terraform.tfstate ./terraform.tfstate
+          
+          echo "📋 Terraform state content:"
+          tofu init
+          tofu state list || echo "No resources in state"
 
       - name: Destroy all infrastructure
         working-directory: ./terraform
