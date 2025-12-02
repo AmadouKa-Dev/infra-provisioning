@@ -69,13 +69,19 @@ jobs:
           name: terraform-state
           path: ./terraform/terraform.tfstate
 
-      # --- Étape 9 : Exécuter Ansible ---
-      - name: Configure K3s cluster via Ansible
+      # --- Étape 9 : Exécuter Ansible 1 ---
+      - name: Configure K3s master via Ansible
         working-directory: ${{ env.ANSIBLE_DIR }}
         run: |
-          ansible-playbook -i inventory.ini playbook.yml --private-key "$HOME/.ssh/id_ansible"
+          ansible-playbook -i inventory.ini playbook.yml --private-key "$HOME/.ssh/id_ansible" --limit 'all:!workers'
+          
+      # --- Étape 10 : Exécuter Ansible 2 ---
+      - name: Configure K3s workers via Ansible
+        working-directory: ${{ env.ANSIBLE_DIR }}
+        run: |
+          ansible-playbook -i inventory.ini playbook.yml --private-key "$HOME/.ssh/id_ansible" --limit 'all:!master'
 
-      # --- Étape 10 : Vérification ---
+      # --- Étape 11 : Vérification ---
       - name: Show generated inventory
         working-directory: ${{ env.ANSIBLE_DIR }}
         run: cat inventory.ini
