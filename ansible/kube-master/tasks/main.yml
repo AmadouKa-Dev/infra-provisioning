@@ -79,7 +79,7 @@
 
 - name: Sauvegarder les infos du master pour les workers
   copy:
-    dest: "../master-info.yml"
+    dest: "/tmp/master-info.yml"
     content: |
       k3s_master_token: "{{ k3s_token.stdout }}"
       k3s_master_ip: "{{ ansible_default_ipv4.address }}"

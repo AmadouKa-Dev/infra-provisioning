@@ -1,7 +1,8 @@
 ---
 - name: Charger les informations du master
   include_vars:
-    file: "../master-info.yml"
+    file: "/tmp/master-info.yml"
+    remote_src: yes
 
 # Étape 3 - Joindre le worker au cluster (seulement si pas déjà fait)
 - name: Joindre le worker au cluster K3s
