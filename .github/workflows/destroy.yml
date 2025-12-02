@@ -82,12 +82,8 @@ jobs:
       - name: Verify Terraform state
         working-directory: ./terraform
         run: |
-          # Copier le tfstate dans le bon répertoire
-          cp ../terraform.tfstate ./terraform.tfstate
-          
-          echo "📋 Terraform state content:"
-          tofu init
-          tofu state list || echo "No resources in state"
+          rm -rf ./terraform/*
+          cp -r ../terraform/* ./terraform/
 
       - name: Destroy all infrastructure
         working-directory: ./terraform
