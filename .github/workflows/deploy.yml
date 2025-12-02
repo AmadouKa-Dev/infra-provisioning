@@ -78,7 +78,6 @@ jobs:
         run: |
           ansible-playbook -i inventory.ini playbook.yml --private-key "$HOME/.ssh/id_ansible" --limit 'all:!workers'
           ansible-playbook -i inventory.ini playbook.yml --private-key "$HOME/.ssh/id_ansible" --limit 'all:!master'
-          
 
       # --- Étape 11 : Vérification ---
       - name: Show generated inventory
