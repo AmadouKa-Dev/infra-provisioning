@@ -72,14 +72,16 @@
     mode: '0644'
     remote_src: yes
 
-# token d’authentification utilisé par les **workers** pour rejoindre le cluster est stocké dans `/var/lib/rancher/k3s/server/node-token`
-- name: Récupérer token du master pour que les workers puissent "join"
-  shell: cat /var/lib/rancher/k3s/server/node-token
-  register: k3s_token
+- name: Sauvegarder token pour workers
+  local_action:
+    module: copy
+    content: "{{ k3s_token.stdout }}"
+    dest: k3s-token.txt
+  become: no
 
-- name: Sauvegarder les infos du master pour les workers
-  copy:
-    dest: "/tmp/master-info.yml"
-    content: |
-      k3s_master_token: "{{ k3s_token.stdout }}"
-      k3s_master_ip: "{{ ansible_default_ipv4.address }}"
+- name: Sauvegarder l’IP master pour join
+  local_action:
+    module: copy
+    content: "{{ ansible_default_ipv4.address }}"  # IP privée
+    dest: k3s-master-ip.txt
+  become: no

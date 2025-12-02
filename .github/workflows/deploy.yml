@@ -77,12 +77,8 @@ jobs:
         working-directory: ${{ env.ANSIBLE_DIR }}
         run: |
           ansible-playbook -i inventory.ini playbook.yml --private-key "$HOME/.ssh/id_ansible" --limit 'all:!workers'
-          
-      # --- Étape 10 : Exécuter Ansible 2 ---
-      - name: Configure K3s workers via Ansible
-        working-directory: ${{ env.ANSIBLE_DIR }}
-        run: |
           ansible-playbook -i inventory.ini playbook.yml --private-key "$HOME/.ssh/id_ansible" --limit 'all:!master'
+          
 
       # --- Étape 11 : Vérification ---
       - name: Show generated inventory
