@@ -1,10 +1,7 @@
 ---
-- name: Vérifier que les variables requises sont définies
-  assert:
-    that:
-      - k3s_master_token is defined
-      - k3s_master_ip is defined
-    fail_msg: "Les variables k3s_master_token et k3s_master_ip doivent être définies"
+- name: Charger les informations du master
+  include_vars:
+    file: "../master-info.yml"
 
 # Étape 3 - Joindre le worker au cluster (seulement si pas déjà fait)
 - name: Joindre le worker au cluster K3s

@@ -67,7 +67,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: terraform-state
-          path: ./terraform
+          path: ./terraform/terraform.tfstate
 
       - name: Wait for EC2 boot
         run: sleep 60

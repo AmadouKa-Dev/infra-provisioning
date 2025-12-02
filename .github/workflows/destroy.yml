@@ -82,8 +82,7 @@ jobs:
       - name: Verify Terraform state
         working-directory: ./terraform
         run: |
-          rm -rf ./terraform/*
-          cp -r ../terraform/* ./terraform/
+          cp ../terraform.tfstate ./terraform.tfstate
 
       - name: Destroy all infrastructure
         working-directory: ./terraform
