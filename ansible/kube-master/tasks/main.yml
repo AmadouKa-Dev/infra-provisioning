@@ -20,7 +20,8 @@
       flannel-iface: ens5
       disable:
         - traefik
-        - metrics-server
+        - servicelb
+        - local-storage
       write-kubeconfig-mode: "0644"
     owner: root
     group: root
