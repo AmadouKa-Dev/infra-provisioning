@@ -4,7 +4,7 @@
   become: true
   roles:
     - common
-    - docker
+    - git
 
 - name: Installer K3s master
   hosts: master
