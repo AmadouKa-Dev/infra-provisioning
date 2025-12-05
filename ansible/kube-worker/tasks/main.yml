@@ -1,10 +1,13 @@
 ---
-- name: Vérifier que les variables requises sont définies
+- name: Charger les variables du master
+  include_vars:
+    file: "{{ playbook_dir }}/k3s_vars.yml"
+
+- name: Vérifier les variables
   assert:
     that:
       - k3s_master_token is defined
       - k3s_master_ip is defined
-    fail_msg: "Les variables k3s_master_token et k3s_master_ip doivent être définies"
 
 # Étape 3 - Joindre le worker au cluster (seulement si pas déjà fait)
 - name: Joindre le worker au cluster K3s

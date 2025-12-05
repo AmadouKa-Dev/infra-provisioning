@@ -69,15 +69,23 @@ jobs:
           name: terraform-state
           path: ./terraform/terraform.tfstate
 
-      - name: Wait for EC2 boot
-        run: sleep 60
-
       # --- Étape 9 : Exécuter Ansible 1 ---
       - name: Configure K3s master via Ansible
         working-directory: ${{ env.ANSIBLE_DIR }}
         run: |
           ansible-playbook -i inventory.ini playbook.yml --private-key "$HOME/.ssh/id_ansible" --limit 'all:!workers'
-          ansible-playbook -i inventory.ini playbook.yml --private-key "$HOME/.ssh/id_ansible" --limit 'all:!master'
+
+          # Extraire les variables après la première exécution
+          echo "K3S_TOKEN=$(cat k3s_vars.yml | grep k3s_master_token | cut -d' ' -f2)" >> $GITHUB_ENV
+          echo "K3S_IP=$(cat k3s_vars.yml | grep k3s_master_ip | cut -d' ' -f2)" >> $GITHUB_ENV
+
+      - name: Configure K3s workers
+        working-directory: ${{ env.ANSIBLE_DIR }}
+        run: |
+          ansible-playbook -i inventory.ini playbook.yml \
+            --private-key "$HOME/.ssh/id_ansible" \
+            --limit 'all:!master' \
+            --extra-vars "k3s_master_token=${{ env.K3S_TOKEN }} k3s_master_ip=${{ env.K3S_IP }}"
 
       # --- Étape 11 : Vérification ---
       - name: Show generated inventory
