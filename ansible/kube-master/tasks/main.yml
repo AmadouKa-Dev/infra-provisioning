@@ -73,6 +73,38 @@
     mode: '0644'
     remote_src: yes
 
+- name: Appliquer local-path-provisioner
+  ansible.builtin.command: >
+    kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.24/deploy/local-path-storage.yaml
+  register: result_localpath
+  changed_when: "'created' in result_localpath.stdout or 'configured' in result_localpath.stdout"
+
+- name: Appliquer ingress-nginx controller
+  ansible.builtin.command: >
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.14.1/deploy/static/provider/cloud/deploy.yaml
+  register: result_ingress
+  changed_when: "'created' in result_ingress.stdout or 'configured' in result_ingress.stdout"
+
+- name: Attendre que le namespace ingress-nginx soit prêt
+  ansible.builtin.command: kubectl wait --namespace ingress-nginx --for=condition=available deployment/ingress-nginx-controller --timeout=180s
+  retries: 5
+  delay: 10
+  register: wait_ingress
+  until: wait_ingress.rc == 0
+
+- name: Patch du service ingress-nginx-controller pour exposer en NodePort
+  ansible.builtin.command: >
+    kubectl patch svc ingress-nginx-controller -n ingress-nginx
+    -p '{ "spec": { "type": "NodePort",
+          "ports": [
+            { "name": "http", "port": 80, "protocol": "TCP",
+              "targetPort": "http", "nodePort": 30080 },
+            { "name": "https", "port": 443, "protocol": "TCP",
+              "targetPort": "https", "nodePort": 30443 }
+          ] } }'
+  register: patch_ingress
+  changed_when: "'patched' in patch_ingress.stdout or patch_ingress.rc == 0"
+
 # token d’authentification utilisé par les **workers** pour rejoindre le cluster est stocké dans `/var/lib/rancher/k3s/server/node-token`
 - name: Récupérer token du master pour que les workers puissent "join"
   shell: cat /var/lib/rancher/k3s/server/node-token

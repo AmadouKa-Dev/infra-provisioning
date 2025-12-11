@@ -5,6 +5,21 @@ resource "aws_security_group" "web_app_sg" {
   vpc_id = data.aws_vpc.default.id
 
   ingress {
+    from_port   = 30080  # Autoriser à se connecter à ce port sur le navigateur
+    to_port     = 30080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # ingress_https
+  ingress {
+    from_port   = 30443
+    to_port     = 30443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
