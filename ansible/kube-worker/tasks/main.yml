@@ -9,21 +9,52 @@
       - k3s_master_token is defined
       - k3s_master_ip is defined
 
+- name: Vérifier la connexion au master K3s
+  wait_for:
+    host: "{{ k3s_master_ip }}"
+    port: 6443
+    timeout: 30
+    state: started
+  register: master_check
+  retries: 3
+  delay: 5
+  until: master_check is succeeded
+
+- name: Télécharger le script d'installation K3s
+  get_url:
+    url: https://get.k3s.io
+    dest: /tmp/k3s-install.sh
+    mode: '0755'
+    timeout: 60
+
 # Étape 3 - Joindre le worker au cluster (seulement si pas déjà fait)
 - name: Joindre le worker au cluster K3s
   shell: |
-    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent \
-      --server https://{{ k3s_master_ip }}:6443 \
-      --token {{ k3s_master_token }} \
-      --node-ip {{ ansible_default_ipv4.address }}" sh -
-  args:
-    executable: /bin/bash
-  async: 200
-  poll: 15
+    /tmp/k3s-install.sh
+  environment:
+    INSTALL_K3S_EXEC: "agent --server https://{{ k3s_master_ip }}:6443 --token {{ k3s_master_token }} --node-ip {{ ansible_default_ipv4.address }}"
+  async: 600
+  poll: 0
+  register: k3s_install
 
-# Étape 4 - Vérifier le service k3s-agent
-- name: Vérifier que le service k3s-agent est actif
+- name: Attendre que le service k3s-agent existe
+  stat:
+    path: /etc/systemd/system/k3s-agent.service
+  register: k3s_service
+  until: k3s_service.stat.exists
+  retries: 60
+  delay: 5
+
+- name: Recharger systemd
+  systemd:
+    daemon_reload: yes
+
+- name: Attendre que k3s-agent soit actif
   systemd:
     name: k3s-agent
     state: started
     enabled: yes
+  register: service_status
+  retries: 30
+  delay: 10
+  until: service_status is succeeded

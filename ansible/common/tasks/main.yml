@@ -10,15 +10,28 @@
     name: python3-pip
     state: present
 
-# Nécessaire pour que kubernetes gère la mémoire
-- name: Désactiver swap
-  command: swapoff -a
+- name: Créer un fichier swap de 1Go
+  command: fallocate -l 1G /swapfile
+  args:
+    creates: /swapfile
 
-- name: Supprimer swap du fstab
-  replace:
+- name: Sécuriser swapfile
+  file:
+    path: /swapfile
+    mode: '0600'
+
+- name: Initialiser swap
+  command: mkswap /swapfile
+  when: swap_created is not defined
+
+- name: Activer swap
+  command: swapon /swapfile
+
+- name: Rendre swap persistant
+  lineinfile:
     path: /etc/fstab
-    regexp: '^([^#].*swap.*)$'
-    replace: '# \1'
+    line: '/swapfile none swap sw 0 0'
+    state: present
     
 - name: Désactiver UFW
   command: ufw disable

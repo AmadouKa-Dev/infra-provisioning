@@ -9,5 +9,10 @@
   git:
     repo: https://github.com/AmadouKa-Dev/k3s-deploy.git
     dest: /home/ubuntu/gestion-depense-deploy
+  become: true
+  become_user: ubuntu
 
-# git config --global --add safe.directory /home/ubuntu/gestion-depense-deploy à ajouter
+- name: Ajouter le safe.directory Git
+  command: git config --global --add safe.directory /home/ubuntu/gestion-depense-deploy
+  become: true
+  become_user: ubuntu

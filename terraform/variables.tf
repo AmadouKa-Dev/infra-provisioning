@@ -10,7 +10,7 @@ variable "region" {
 
 variable "instance_count" {
     type = number
-    default = 3
+    default = 2
 }
 
 variable "key_name" {
