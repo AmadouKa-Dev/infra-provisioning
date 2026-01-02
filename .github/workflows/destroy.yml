@@ -6,9 +6,6 @@ on:
 jobs:
   destroy:
     runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
     env:
       TF_WORKING_DIR: ./terraform
 
@@ -29,50 +26,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
-
-      # - name: Get latest successful Terraform Apply run
-      #   id: get_run
-      #   run: |
-      #     owner_repo="${GITHUB_REPOSITORY}"
-      #     workflow_name="Deploy K3s Infrastructure"
-
-      #     echo "Fetching latest successful run for workflow: $workflow_name"
-      #     workflow_id=$(gh api repos/$owner_repo/actions/workflows \
-      #       | jq -r --arg wf "$workflow_name" '.workflows[] | select(.name==$wf) | .id' | head -n1)
-
-      #     run_id=$(gh api repos/$owner_repo/actions/workflows/$workflow_id/runs?status=success \
-      #       --jq '.workflow_runs[0].id')
-
-      #     echo "run_id=$run_id" >> $GITHUB_OUTPUT
-      #   env:
-      #     GH_TOKEN: ${{ github.token }}
-
-      # - name: Download latest artifact (terraform.tfstate)
-      #   id: download
-      #   run: |
-      #     owner_repo="${GITHUB_REPOSITORY}"
-      #     run_id=${{ steps.get_run.outputs.run_id }}
-
-      #     echo "Downloading artifact 'terraform-state' from run $run_id"
-      #     artifact_url=$(gh api repos/$owner_repo/actions/runs/$run_id/artifacts \
-      #       --jq '.artifacts[] | select(.name=="terraform-state") | .archive_download_url')
-
-      #     curl -L -H "Authorization: token ${{ github.token }}" -o artifact.zip "$artifact_url"
-      #     unzip -o artifact.zip
-          
-      #     echo "✅ Extracted artifact contents:"
-      #     ls -lR .
-
-      #     # Vérifier que le fichier tfstate existe
-      #     if [ ! -f terraform.tfstate ]; then
-      #       echo "❌ ERROR: terraform.tfstate not found!"
-      #       exit 1
-      #     fi
-
-      #     echo "✅ terraform.tfstate found and ready"
-      #   env:
-      #     GH_TOKEN: ${{ github.token }}
-      #     GITHUB_TOKEN: ${{ github.token }}
       
       - name: Setup SSH key from secrets
         run: |
@@ -80,11 +33,6 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ansible
           chmod 600 ~/.ssh/id_ansible
           ssh-keygen -y -f ~/.ssh/id_ansible > ~/.ssh/id_ansible.pub
-
-      # - name: Verify Terraform state
-      #   working-directory: ./terraform
-      #   run: |
-      #     cp ../terraform.tfstate ./terraform.tfstate
 
       - name: Destroy all infrastructure
         working-directory: ${{ env.TF_WORKING_DIR }}
