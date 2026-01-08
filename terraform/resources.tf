@@ -76,7 +76,7 @@ resource "aws_instance" "master" {
   instance_type = var.instance_type
   key_name = aws_key_pair.opentofu_key.key_name
   subnet_id = data.aws_subnet.default.id
-  security_groups = [aws_security_group.web_app_sg.id]
+  vpc_security_group_ids = [aws_security_group.web_app_sg.id]
 
   # initialisation à la création de la vm -> installe Python pour Ansible par la suite
   user_data = <<-EOF
@@ -97,7 +97,7 @@ resource "aws_instance" "workers" {
   instance_type = var.instance_type
   key_name = aws_key_pair.opentofu_key.key_name
   subnet_id = data.aws_subnet.default.id
-  security_groups = [aws_security_group.web_app_sg.id]
+  vpc_security_group_ids = [aws_security_group.web_app_sg.id]
 
   # initialisation à la création de la vm -> installe Python pour Ansible par la suite
   user_data = <<-EOF
