@@ -20,12 +20,18 @@
     path: /swapfile
     mode: '0600'
 
+- name: Vérifier si le swap est déjà actif
+  command: swapon --show
+  register: swap_status
+  changed_when: false
+
 - name: Initialiser swap
   command: mkswap /swapfile
-  when: swap_created is not defined
+  when: swap_status.stdout == ""
 
 - name: Activer swap
   command: swapon /swapfile
+  when: swap_status.stdout == ""
 
 - name: Rendre swap persistant
   lineinfile:
