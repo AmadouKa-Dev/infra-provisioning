@@ -1,3 +1,7 @@
+# test
+- name: voir quels nodes sont là
+  command : kubectl get nodes
+
 # On label le noeud 3 avec la valeur gitops
 - name: Label GitOps node
   command: kubectl label node k3s-worker-3 role=gitops --overwrite
