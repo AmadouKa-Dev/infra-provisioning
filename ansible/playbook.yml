@@ -35,3 +35,9 @@
     k3s_master_ip: "{{ hostvars[groups['master'][0]]['k3s_master_ip'] }}"
   roles:
     - kube-worker
+
+- name: Installer ArgoCD
+  hosts: master
+  become: true
+  roles:
+    - argocd

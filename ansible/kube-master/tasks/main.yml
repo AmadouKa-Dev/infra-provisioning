@@ -39,7 +39,6 @@
     path: /etc/rancher/k3s/k3s.yaml
     timeout: 120
 
-
 - name: Redémarrer K3s pour recharger config
   systemd:
     name: k3s
