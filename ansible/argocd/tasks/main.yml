@@ -1,23 +1,27 @@
 # test
 - name: voir quels nodes sont là
   command: kubectl get nodes -o wide
+  register: nodes_output
+
+- debug:
+    msg: "{{ nodes_output.stdout }}"
 
 # On label le noeud 3 avec la valeur gitops
-# - name: Label GitOps node
-#   command: kubectl label node k3s-worker-3 role=gitops --overwrite
+- name: Label GitOps node
+  command: kubectl label node k3s-worker-3 role=gitops --overwrite
 
-# # On accepte sur ce noeud que ce qui a le role gitops
-# - name: Taint GitOps node
-#   command: kubectl taint node k3s-worker-3 role=gitops:NoSchedule --overwrite
+# On accepte sur ce noeud que ce qui a le role gitops
+- name: Taint GitOps node
+  command: kubectl taint node k3s-worker-3 role=gitops:NoSchedule --overwrite
 
-# - name: Create argocd namespace
-#   command: kubectl create namespace argocd
-#   ignore_errors: yes
+- name: Create argocd namespace
+  command: kubectl create namespace argocd
+  ignore_errors: yes
 
-# - name: Copy Argo CD install manifest
-#   copy:
-#     src: argocd-install.yaml
-#     dest: /tmp/argocd-install.yaml
+- name: Copy Argo CD install manifest
+  copy:
+    src: argocd-install.yaml
+    dest: /tmp/argocd-install.yaml
 
-# - name: Install Argo CD (optimized)
-#   command: kubectl apply -f /tmp/argocd-install.yaml -n argocd
+- name: Install Argo CD (optimized)
+  command: kubectl apply -f /tmp/argocd-install.yaml -n argocd

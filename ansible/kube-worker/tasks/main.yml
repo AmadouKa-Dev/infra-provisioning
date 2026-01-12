@@ -32,7 +32,7 @@
   shell: |
     /tmp/k3s-install.sh
   environment:
-    INSTALL_K3S_EXEC: "agent --server https://{{ k3s_master_ip }}:6443 --token {{ k3s_master_token }} --node-ip {{ ansible_default_ipv4.address }}"
+    INSTALL_K3S_EXEC: "agent --server https://{{ k3s_master_ip }}:6443 --token {{ k3s_master_token }} --node-ip {{ ansible_default_ipv4.address }} --node-name {{ inventory_hostname }}"
   async: 600
   poll: 0
   register: k3s_install
