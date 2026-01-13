@@ -45,6 +45,7 @@
     - name: Vérification finale du master
       shell: kubectl get nodes --no-headers | awk '{print $2}' | grep -v Ready && exit 1 || exit 0
       delegate_to : k3s-master
+      run_once: true
       register: nodes_ready
       retries: 10
       delay: 20
