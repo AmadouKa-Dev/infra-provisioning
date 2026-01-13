@@ -20,6 +20,10 @@
   delay: 5
   until: master_check is succeeded
 
+- name: Définir le hostname système
+  hostname:
+    name: "{{ inventory_hostname }}"
+
 - name: Télécharger le script d'installation K3s
   get_url:
     url: https://get.k3s.io
