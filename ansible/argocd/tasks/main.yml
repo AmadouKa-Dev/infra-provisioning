@@ -1,6 +1,6 @@
 # Récupérer derniere vm
 - name: Get last node's ip
-  command : kubectl get nodes --no-headers | awk '{print $1}' | tail -1
+  shell : kubectl get nodes --no-headers | awk '{print $1}' | tail -n 1
   register: last_node
 
 # On label le noeud 3 avec la valeur gitops
