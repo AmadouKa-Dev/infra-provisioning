@@ -24,4 +24,4 @@
   command: kubectl apply -f /tmp/argocd-install.yaml -n argocd
 
 - name: Déployer les applications ArgoCD
-  command: kubectl apply -f application.yaml
+  command: kubectl apply -f /home/ubuntu/gestion-depense-deploy/application.yaml
