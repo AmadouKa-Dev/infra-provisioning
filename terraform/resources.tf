@@ -44,6 +44,14 @@ resource "aws_security_group" "web_app_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+# Va nous servir pour le argocd
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
 # Tout trafic interne entre membres du SG
   ingress {
     from_port = 0
