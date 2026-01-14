@@ -17,3 +17,6 @@
 
 - name: Install Argo CD (optimized)
   command: kubectl apply -f /tmp/argocd-install.yaml -n argocd
+
+- name: Déployer les applications ArgoCD
+  command: kubectl apply -f application.yaml
