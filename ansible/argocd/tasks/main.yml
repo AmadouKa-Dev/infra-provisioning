@@ -22,6 +22,7 @@
 
 - name: Install Argo CD (optimized)
   command: kubectl apply -f /tmp/argocd-install.yaml -n argocd
+  failed_when: false
 
 - name: Déployer les applications ArgoCD
   command: kubectl apply -f /home/ubuntu/gestion-depense-deploy/application.yaml
