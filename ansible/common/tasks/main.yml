@@ -2,8 +2,6 @@
 - name: Mise à jour des paquets
   apt:
     update_cache: yes
-    cache_valid_time: 3600
-    upgrade: safe
 
 - name: Installer pip
   apt:
