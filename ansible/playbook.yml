@@ -36,22 +36,6 @@
   roles:
     - kube-worker
 
-  post_tasks:
-    - name: Attendre jointure des workers vers le master
-      pause:
-        seconds: 45
-        prompt: "Workers installés, attente de jointure..."
-
-    - name: Vérification finale du master
-      shell: kubectl get nodes --no-headers | awk '{print $2}' | grep -v Ready && exit 1 || exit 0
-      delegate_to : k3s-master
-      run_once: true
-      register: nodes_ready
-      retries: 10
-      delay: 20
-      until: nodes_ready.rc == 0
-      changed_when: false
-
 - name: Installer ArgoCD
   hosts: master
   become: true

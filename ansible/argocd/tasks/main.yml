@@ -1,10 +1,15 @@
+# Récupérer derniere vm
+- name: Get last node's ip
+  command : kubectl get nodes --no-headers | awk '{print $1}' | tail -1
+  register: last_node
+
 # On label le noeud 3 avec la valeur gitops
 - name: Label GitOps node
-  command: kubectl label node k3s-worker-3 role=gitops --overwrite
+  command: kubectl label node {{ last_node.stdout }} role=gitops --overwrite
 
 # On accepte sur ce noeud que ce qui a le role gitops
 - name: Taint GitOps node
-  command: kubectl taint node k3s-worker-3 role=gitops:NoSchedule --overwrite
+  command: kubectl taint node {{ last_node.stdout }} role=gitops:NoSchedule --overwrite
 
 - name: Create argocd namespace
   command: kubectl create namespace argocd
