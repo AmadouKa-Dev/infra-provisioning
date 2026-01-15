@@ -24,5 +24,13 @@
   command: kubectl apply -f /tmp/argocd-install.yaml -n argocd
   failed_when: false
 
-#- name: Déployer les applications ArgoCD
-#  command: kubectl apply -f /home/ubuntu/gestion-depense-deploy/application.yaml
+- name: Wait for Argo CD controller (short)
+  command: >
+    kubectl wait --for=condition=ready pod
+    -l app.kubernetes.io/name=argocd-application-controller
+    -n argocd
+    --timeout=60s
+  failed_when: false
+
+- name: Déployer les applications ArgoCD
+  command: kubectl apply -f /home/ubuntu/gestion-depense-deploy/application.yaml
